@@ -82,6 +82,14 @@
         @media (max-width: 640px) { #heroSpotlight { min-height: 470px; } #heroTitle { font-size: 2rem; } }
 
 
+        #browseContainer select { width: 100%; min-width: 0; }
+        @media (min-width: 640px) { #browseContainer select { width: auto; } }
+        .quick-genres { display:flex; gap:8px; overflow-x:auto; padding:2px 1px 7px; scrollbar-width:thin; scrollbar-color:#475569 transparent; -webkit-overflow-scrolling:touch; }
+        .quick-genre-chip { flex:0 0 auto; border:1px solid #334155; border-radius:999px; background:#0f172a; color:#cbd5e1; padding:7px 13px; font-size:12px; font-weight:800; transition:background .18s,border-color .18s,color .18s,transform .18s; }
+        .quick-genre-chip:hover { border-color:#f59e0b; color:#fcd34d; transform:translateY(-1px); }
+        .quick-genre-chip[aria-pressed="true"] { background:#7f1d1d; border-color:#ef4444; color:#fff; box-shadow:0 0 0 1px rgba(239,68,68,.18); }
+        @media (max-width: 420px) { .quick-genre-chip { padding:7px 11px; font-size:11px; } }
+
         .starcima-select {
             background-color: #0f172a;
             border: 1px solid #1e293b;
@@ -400,7 +408,7 @@
                         <div id="searchSuggestionsBox" class="absolute top-full right-0 left-0 mt-2 bg-[#0f172a] border border-[#1e293b] rounded-2xl shadow-2xl z-50 hidden max-h-80 overflow-y-auto custom-scrollbar divide-y divide-gray-800/60"></div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3">
                         <select id="typeSelect" onchange="onFilterChange()" class="starcima-select">
                             <option value="all" selected>جميع الأعمال</option>
                             <option value="tv">مسلسلات</option>
@@ -441,6 +449,22 @@
                             <option value="vote_average.desc">الأعلى تقييماً</option>
                             <option value="primary_release_date.desc">الأحدث إصداراً</option>
                         </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="text-xs font-extrabold text-gray-300">تصنيفات سريعة</div>
+                        <div class="quick-genres" role="group" aria-label="اختيار تصنيف سريع">
+                            <button type="button" class="quick-genre-chip" data-genre="" aria-pressed="true" onclick="applyQuickGenre('')">الكل</button>
+                            <button type="button" class="quick-genre-chip" data-genre="28,10759" aria-pressed="false" onclick="applyQuickGenre('28,10759')">أكشن</button>
+                            <button type="button" class="quick-genre-chip" data-genre="35" aria-pressed="false" onclick="applyQuickGenre('35')">كوميدي</button>
+                            <button type="button" class="quick-genre-chip" data-genre="80" aria-pressed="false" onclick="applyQuickGenre('80')">جريمة وغموض</button>
+                            <button type="button" class="quick-genre-chip" data-genre="18" aria-pressed="false" onclick="applyQuickGenre('18')">دراما</button>
+                            <button type="button" class="quick-genre-chip" data-genre="878,10765" aria-pressed="false" onclick="applyQuickGenre('878,10765')">خيال علمي</button>
+                            <button type="button" class="quick-genre-chip" data-genre="27" data-type="movie" aria-pressed="false" onclick="applyQuickGenre('27','movie')">رعب</button>
+                            <button type="button" class="quick-genre-chip" data-genre="16" aria-pressed="false" onclick="applyQuickGenre('16')">أنمي</button>
+                            <button type="button" class="quick-genre-chip" data-genre="99" aria-pressed="false" onclick="applyQuickGenre('99')">وثائقي</button>
+                            <button type="button" class="quick-genre-chip" data-genre="10749" data-type="movie" aria-pressed="false" onclick="applyQuickGenre('10749','movie')">رومانسي</button>
+                        </div>
                     </div>
 
                     <div class="pt-3 border-t border-[#1e293b] flex items-center justify-end text-xs">
@@ -2241,7 +2265,25 @@
             applyFilters(false);
         }
 
+        function applyQuickGenre(genreValue, mediaType = '') {
+            const genreSelect = document.getElementById('genreSelect');
+            const typeSelect = document.getElementById('typeSelect');
+            if (genreSelect) genreSelect.value = genreValue;
+            if (mediaType && typeSelect) typeSelect.value = mediaType;
+            onFilterChange();
+        }
+
+        function syncQuickGenreButtons() {
+            const genre = document.getElementById('genreSelect')?.value || '';
+            const type = document.getElementById('typeSelect')?.value || 'all';
+            document.querySelectorAll('.quick-genre-chip').forEach(button => {
+                const typeMatches = !button.dataset.type || button.dataset.type === type;
+                button.setAttribute('aria-pressed', String(button.dataset.genre === genre && typeMatches));
+            });
+        }
+
         function onFilterChange() {
+            syncQuickGenreButtons();
             applyFilters(true);
         }
 
@@ -2250,6 +2292,7 @@
             document.getElementById('clearSearchBtn').classList.add('hidden');
             document.getElementById('typeSelect').value = 'all';
             document.getElementById('genreSelect').value = '';
+            syncQuickGenreButtons();
             document.getElementById('countrySelect').value = '';
             if (document.getElementById('ratingFilterSelect')) document.getElementById('ratingFilterSelect').value = '0';
             document.getElementById('sortSelect').value = 'popularity.desc';
