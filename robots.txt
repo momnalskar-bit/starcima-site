@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://momnalskar-bit.github.io/starcima-site/sitemap.xml
